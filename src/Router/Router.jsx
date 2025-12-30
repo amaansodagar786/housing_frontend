@@ -24,6 +24,7 @@ import Members from "../Pages/Members/Members";
 import Footer from "../Components/Footer/Footer";
 import FixRates from "../Pages/FixRates/FixRates";
 import Maintenance from "../Pages/Maintenance/Maintenance";
+import Expense from "../Pages/Expense/Expense";
 
 const Router = () => {
   return (
@@ -42,6 +43,7 @@ const Router = () => {
           <Route path="/members" element={<Members />} />
           <Route path="/fixrates" element={<FixRates />} />
           <Route path="/maintenance" element={<Maintenance />} />
+          <Route path="/expense" element={<Expense />} />
 
           {/* PROTECTED ROUTES (LOGIN REQUIRED ONLY) */}
           <Route

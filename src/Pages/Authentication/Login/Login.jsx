@@ -6,7 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Login.scss";
-import logo from "../../../Assets/logo/jass_logo1.png";
+import logo from "../../../Assets/logo/th_logo.png";
 import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {

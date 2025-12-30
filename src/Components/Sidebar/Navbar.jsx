@@ -3,17 +3,15 @@ import { useNavigate, NavLink, useLocation } from "react-router-dom";
 
 // Icons
 import { BiLogOut, BiLogIn } from "react-icons/bi";
-import { TbUsers, TbReportAnalytics, TbTrash } from "react-icons/tb";
+import { TbUsers, TbReportAnalytics } from "react-icons/tb";
 import { LuFile } from "react-icons/lu";
-import { PiBasket } from "react-icons/pi";
-import { HiOutlineHome } from "react-icons/hi";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { RxCross1 } from "react-icons/rx";
-import { FiUser } from "react-icons/fi";
-import { MdDiscount } from "react-icons/md";
-import { BiLayout } from "react-icons/bi";
+import { FiUser, FiHome, FiDollarSign, FiTrendingUp, FiSettings } from "react-icons/fi";
+import { BsCurrencyRupee } from "react-icons/bs";
+import { MdOutlineDashboard } from "react-icons/md";
 
-import logo from "../../Assets/logo/jass_logo_new.png";
+import logo from "../../Assets/logo/th_logo.png";
 import "./Navbar.css";
 
 const Navbar = ({
@@ -21,7 +19,6 @@ const Navbar = ({
   onNavigation,
   isCollapsed = false,
   onToggleCollapse,
-  pageDashboard = null,
 }) => {
   const [toggle, setToggle] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -55,33 +52,29 @@ const Navbar = ({
 
   const getPageTitle = () => {
     switch (location.pathname) {
-      case "/members":
-        return "Members Dashboard";
-    
-      case "/dashboard":
-        return "Dashboard";
-      case "/report":
-        return "Business Reports And Analytics";
       case "/":
-        return "Dashboard";
+        return "Financial Dashboard";
+      case "/members":
+        return "Members Management";
+      case "/fixrates":
+        return "Fixed Rates Management";
       case "/maintenance":
         return "Maintenance Management";
+      case "/expense":
+        return "Expense Management";
       default:
         return "";
     }
   };
 
   const menuData = [
-    // { icon: <PiBasket />, title: "Invoice", path: "/" }, 
-    { icon: <HiOutlineHome />, title: "Dashboard", path: "/dashboard" },
+    { icon: <MdOutlineDashboard />, title: "Dashboard", path: "/" },
+      { icon: <FiDollarSign />, title: "Maintenance", path: "/maintenance" },
     { icon: <TbUsers />, title: "Members", path: "/members" },
-    { icon: <LuFile />, title: "Retes", path: "/fixrates" },
-    { icon: <LuFile />, title: "Maintenance", path: "/maintenance" },
-    { icon: <BiLayout />, title: "Inventory", path: "/inventory" },
-    { icon: <TbTrash />, title: "Product Disposal", path: "/defective" },
-    { icon: <MdDiscount />, title: "Discount", path: "/productdiscount" },
-    { icon: <TbReportAnalytics />, title: "Report", path: "/report" },
-    { icon: <TbUsers />, title: "Admin", path: "/admin" },
+        { icon: <FiTrendingUp />, title: "Expense", path: "/expense" },
+
+    { icon: <BsCurrencyRupee />, title: "Fixed Rates", path: "/fixrates" },
+    // { icon: <FiSettings />, title: "Settings", path: "/settings" }, 
   ];
 
   return (

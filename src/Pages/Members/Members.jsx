@@ -149,7 +149,7 @@ const Members = () => {
   /* ================= DELETE ================= */
   const deleteMember = async (id) => {
     if (!window.confirm("Are you sure you want to delete this member?")) return;
-    
+
     try {
       await fetch(
         `${import.meta.env.VITE_API_URL}/member/delete-member/${id}`,
@@ -166,7 +166,7 @@ const Members = () => {
   /* ================= BULK IMPORT ================= */
   const handleBulkImport = async (file) => {
     if (!file) return;
-    
+
     setIsBulkLoading(true);
     const reader = new FileReader();
 
@@ -233,7 +233,7 @@ const Members = () => {
             <li>Units Used</li>
             <li>Pending Amount</li>
           </ul>
-          
+
           <div className="file-upload-area">
             <input
               type="file"
@@ -248,6 +248,7 @@ const Members = () => {
     </div>
   );
 
+  /* ================= MEMBER DETAILS MODAL ================= */
   /* ================= MEMBER DETAILS MODAL ================= */
   const MemberModal = ({ member }) => {
     const [editMode, setEditMode] = useState(false);
@@ -265,7 +266,7 @@ const Members = () => {
             <h3 className="modal-title">{editMode ? "Edit Member" : "Member Details"}</h3>
             <button className="close-btn" onClick={() => setSelectedMember(null)}>×</button>
           </div>
-          
+
           <div className="modal-body">
             <div className="detail-grid">
               <div className="detail-row">
@@ -276,7 +277,7 @@ const Members = () => {
                   {editMode ? (
                     <input
                       value={formData.flatNumber}
-                      onChange={(e) => setFormData({...formData, flatNumber: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, flatNumber: e.target.value })}
                       className="modal-input"
                     />
                   ) : (
@@ -293,7 +294,7 @@ const Members = () => {
                   {editMode ? (
                     <select
                       value={formData.type}
-                      onChange={(e) => setFormData({...formData, type: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                       className="modal-select"
                     >
                       <option value="OWNER">OWNER</option>
@@ -313,11 +314,46 @@ const Members = () => {
                   {editMode ? (
                     <input
                       value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="modal-input"
                     />
                   ) : (
                     member.name
+                  )}
+                </div>
+              </div>
+
+              {/* Mobile Field - ALWAYS SHOW (not conditional) */}
+              <div className="detail-row">
+                <div className="detail-label">Mobile</div>
+                <div className="detail-value">
+                  {editMode ? (
+                    <input
+                      value={formData.mobile || ""}
+                      onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                      className="modal-input"
+                      placeholder="Enter mobile number"
+                    />
+                  ) : (
+                    member.mobile || "Not provided"
+                  )}
+                </div>
+              </div>
+
+              {/* Email Field - ALWAYS SHOW (not conditional) */}
+              <div className="detail-row">
+                <div className="detail-label">Email</div>
+                <div className="detail-value">
+                  {editMode ? (
+                    <input
+                      value={formData.email || ""}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="modal-input"
+                      type="email"
+                      placeholder="Enter email address"
+                    />
+                  ) : (
+                    member.email || "Not provided"
                   )}
                 </div>
               </div>
@@ -331,8 +367,9 @@ const Members = () => {
                     <input
                       type="number"
                       value={formData.unitsUsed}
-                      onChange={(e) => setFormData({...formData, unitsUsed: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, unitsUsed: e.target.value })}
                       className="modal-input"
+                      min="0"
                     />
                   ) : (
                     member.unitsUsed
@@ -349,39 +386,27 @@ const Members = () => {
                     <input
                       type="number"
                       value={formData.pendingAmount}
-                      onChange={(e) => setFormData({...formData, pendingAmount: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, pendingAmount: e.target.value })}
                       className="modal-input"
+                      min="0"
+                      step="0.01"
                     />
                   ) : (
                     `₹${member.pendingAmount}`
                   )}
                 </div>
               </div>
-
-              {member.mobile && (
-                <div className="detail-row">
-                  <div className="detail-label">Mobile</div>
-                  <div className="detail-value">{member.mobile}</div>
-                </div>
-              )}
-
-              {member.email && (
-                <div className="detail-row">
-                  <div className="detail-label">Email</div>
-                  <div className="detail-value">{member.email}</div>
-                </div>
-              )}
             </div>
           </div>
 
           <div className="modal-footer">
-            <button 
+            <button
               className={editMode ? "save-btn" : "update-btn"}
               onClick={editMode ? handleSave : () => setEditMode(true)}
             >
               {editMode ? <><FaSave /> Save Changes</> : <><FaEdit /> Edit</>}
             </button>
-            <button 
+            <button
               className="delete-btn"
               onClick={() => deleteMember(member.memberId)}
             >
@@ -398,7 +423,7 @@ const Members = () => {
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="members-container">
         <div className="page-header">
-          <h2>.</h2>  
+          <h2>.</h2>
           <div className="header-controls">
             <div className="search-container">
               <FaSearch className="search-icon" />
@@ -410,16 +435,16 @@ const Members = () => {
                 className="search-input"
               />
             </div>
-            
+
             <div className="action-buttons-group">
-              <button 
+              <button
                 className="bulk-import-btn"
                 onClick={() => setShowBulkImport(true)}
                 disabled={isBulkLoading}
               >
                 <FaFileExcel /> Bulk Import
               </button>
-              <button 
+              <button
                 className="add-btn"
                 onClick={() => setShowForm(!showForm)}
               >
@@ -444,15 +469,15 @@ const Members = () => {
                       <label htmlFor="flatNumber">
                         <FaHome /> Flat Number *
                       </label>
-                      <Field 
-                        name="flatNumber" 
+                      <Field
+                        name="flatNumber"
                         id="flatNumber"
                         placeholder="Enter flat number"
                         className={errors.flatNumber && touched.flatNumber ? 'error-field' : ''}
                       />
                       <ErrorMessage name="flatNumber" component="div" className="error" />
                     </div>
-                    
+
                     <div className="form-field">
                       <label htmlFor="type">
                         <FaUserTag /> Type *
@@ -470,19 +495,19 @@ const Members = () => {
                       <label htmlFor="name">
                         <FaUser /> Full Name *
                       </label>
-                      <Field 
-                        name="name" 
+                      <Field
+                        name="name"
                         id="name"
                         placeholder="Enter member's full name"
                         className={errors.name && touched.name ? 'error-field' : ''}
                       />
                       <ErrorMessage name="name" component="div" className="error" />
                     </div>
-                    
+
                     <div className="form-field">
                       <label htmlFor="mobile">Mobile Number</label>
-                      <Field 
-                        name="mobile" 
+                      <Field
+                        name="mobile"
                         id="mobile"
                         placeholder="Enter 10-digit mobile number"
                       />
@@ -493,8 +518,8 @@ const Members = () => {
                   <div className="form-row">
                     <div className="form-field">
                       <label htmlFor="email">Email Address</label>
-                      <Field 
-                        name="email" 
+                      <Field
+                        name="email"
                         id="email"
                         type="email"
                         placeholder="Enter email address"
@@ -508,8 +533,8 @@ const Members = () => {
                       <label htmlFor="unitsUsed">
                         <FaTachometerAlt /> Units Used
                       </label>
-                      <Field 
-                        name="unitsUsed" 
+                      <Field
+                        name="unitsUsed"
                         id="unitsUsed"
                         type="number"
                         placeholder="Enter units used"
@@ -517,13 +542,13 @@ const Members = () => {
                       />
                       <ErrorMessage name="unitsUsed" component="div" className="error" />
                     </div>
-                    
+
                     <div className="form-field">
                       <label htmlFor="pendingAmount">
                         <FaMoneyBillWave /> Pending Amount
                       </label>
-                      <Field 
-                        name="pendingAmount" 
+                      <Field
+                        name="pendingAmount"
                         id="pendingAmount"
                         type="number"
                         placeholder="Enter pending amount"
@@ -551,7 +576,7 @@ const Members = () => {
               </span>
             )}
           </div>
-          
+
           <div className="data-table">
             {isLoading ? (
               <div className="loading-state">
@@ -562,7 +587,7 @@ const Members = () => {
               <div className="empty-state">
                 <p>No members found{searchTerm ? ' matching your search' : ''}</p>
                 {searchTerm && (
-                  <button 
+                  <button
                     className="clear-search-btn"
                     onClick={() => setSearchTerm('')}
                   >
@@ -600,7 +625,7 @@ const Members = () => {
                       <td className="units-cell">{member.unitsUsed || 0}</td>
                       <td className="amount-cell">₹{member.pendingAmount || 0}</td>
                       <td className="actions-cell">
-                        <button 
+                        <button
                           className="view-btn"
                           onClick={() => setSelectedMember(member)}
                           title="View Details"
