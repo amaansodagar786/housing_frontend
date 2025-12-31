@@ -249,7 +249,6 @@ const Members = () => {
   );
 
   /* ================= MEMBER DETAILS MODAL ================= */
-  /* ================= MEMBER DETAILS MODAL ================= */
   const MemberModal = ({ member }) => {
     const [editMode, setEditMode] = useState(false);
     const [formData, setFormData] = useState({ ...member });
@@ -437,13 +436,13 @@ const Members = () => {
             </div>
 
             <div className="action-buttons-group">
-              <button
+              {/* <button
                 className="bulk-import-btn"
                 onClick={() => setShowBulkImport(true)}
                 disabled={isBulkLoading}
               >
                 <FaFileExcel /> Bulk Import
-              </button>
+              </button> */}
               <button
                 className="add-btn"
                 onClick={() => setShowForm(!showForm)}
@@ -604,12 +603,16 @@ const Members = () => {
                     <th>Name</th>
                     <th>Units Used</th>
                     <th>Pending Amount</th>
-                    <th>Actions</th>
+                    {/* <th>Actions</th>  */}
                   </tr>
                 </thead>
                 <tbody>
                   {filteredMembers.map(member => (
-                    <tr key={member.memberId} className={selectedMember?.memberId === member.memberId ? 'selected' : ''}>
+                    <tr
+                      key={member.memberId}
+                      className={`clickable-row ${selectedMember?.memberId === member.memberId ? 'selected' : ''}`}
+                      onClick={() => setSelectedMember(member)} // Add onClick here
+                    >
                       <td>
                         <div className="flat-cell">
                           <FaHome className="flat-icon" />
@@ -624,15 +627,16 @@ const Members = () => {
                       <td className="name-cell">{member.name}</td>
                       <td className="units-cell">{member.unitsUsed || 0}</td>
                       <td className="amount-cell">₹{member.pendingAmount || 0}</td>
-                      <td className="actions-cell">
-                        <button
-                          className="view-btn"
-                          onClick={() => setSelectedMember(member)}
-                          title="View Details"
-                        >
-                          View
-                        </button>
-                      </td>
+                      {/* Remove this entire td element: */}
+                      {/* <td className="actions-cell">
+        <button
+          className="view-btn"
+          onClick={() => setSelectedMember(member)}
+          title="View Details"
+        >
+          View
+        </button>
+      </td> */}
                     </tr>
                   ))}
                 </tbody>

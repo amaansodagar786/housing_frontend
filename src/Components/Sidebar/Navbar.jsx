@@ -11,7 +11,7 @@ import { FiUser, FiHome, FiDollarSign, FiTrendingUp, FiSettings } from "react-ic
 import { BsCurrencyRupee } from "react-icons/bs";
 import { MdOutlineDashboard } from "react-icons/md";
 
-import logo from "../../Assets/logo/th_logo.png";
+import logo from "../../Assets/logo/newth_logo.png";
 import "./Navbar.css";
 
 const Navbar = ({
