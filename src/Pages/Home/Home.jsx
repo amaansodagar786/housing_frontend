@@ -224,9 +224,9 @@ const Home = () => {
             <FiDollarSign className="home-metric-icon" />
             <div>
               <h3>Total Maintenance Collected</h3>
-              <p>{formatCurrency(summary.totalMaintenanceCollected)}</p>
+              <p>{formatCurrency(summary.totalCollectedAmount)}</p>
               <small>
-                Collected: {formatCurrency(summary.totalCollectedAmount)} • 
+                {/* Collected: {formatCurrency(summary.totalCollectedAmount)} •   */}
                 {summary.totalFlats} flats
               </small>
             </div>
