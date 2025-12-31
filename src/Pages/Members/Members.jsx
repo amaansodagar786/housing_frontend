@@ -573,13 +573,13 @@ const Members = () => {
             </div>
 
             <div className="action-buttons-group">
-              <button
+              {/* <button
                 className="bulk-import-btn"
                 onClick={() => setShowBulkImport(true)}
                 disabled={isBulkLoading}
               >
                 <FaFileExcel /> Bulk Import
-              </button>
+              </button> */}
               <button
                 className="add-btn"
                 onClick={() => setShowForm(!showForm)}
