@@ -441,8 +441,8 @@ const Home = () => {
               <PieChart>
                 <Pie
                   data={[
-                    { name: 'Maintenance Pending', value: charts.pendingOverview.maintenancePending },
-                    { name: 'Expense Pending', value: charts.pendingOverview.expensePending }
+                    { name: 'Maintenance ', value: charts.pendingOverview.maintenancePending },
+                    { name: 'Expense ', value: charts.pendingOverview.expensePending }
                   ]}
                   cx="50%"
                   cy="50%"

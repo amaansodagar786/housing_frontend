@@ -40,10 +40,42 @@ const Router = () => {
           {/* PUBLIC ROUTES */}
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/members" element={<Members />} />
-          <Route path="/fixrates" element={<FixRates />} />
-          <Route path="/maintenance" element={<Maintenance />} />
-          <Route path="/expense" element={<Expense />} />
+          <Route
+            path="/members"
+            element={
+              <ProtectedRoute>
+                <Members />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/fixrates"
+            element={
+              <ProtectedRoute>
+                <FixRates />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/maintenance"
+            element={
+              <ProtectedRoute>
+                <Maintenance />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/expense"
+            element={
+              <ProtectedRoute>
+                <Expense />
+              </ProtectedRoute>
+            }
+          />
+
 
           {/* PROTECTED ROUTES (LOGIN REQUIRED ONLY) */}
           <Route

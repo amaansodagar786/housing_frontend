@@ -164,6 +164,7 @@ const Members = () => {
   };
 
   /* ================= BULK IMPORT ================= */
+  /* ================= BULK IMPORT ================= */
   const handleBulkImport = async (file) => {
     if (!file) return;
 
@@ -177,13 +178,13 @@ const Members = () => {
         const rows = XLSX.utils.sheet_to_json(sheet);
 
         const members = rows.map(r => ({
-          flatNumber: r["Flat Number"],
-          type: r["Type"] || "OWNER",
-          name: r["Name"],
-          mobile: r["Mobile"] || "",
-          email: r["Email"] || "",
-          unitsUsed: Number(r["Units Used"] || 0),
-          pendingAmount: Number(r["Pending Amount"] || 0),
+          flatNumber: r["Flat Number"]?.toString() || "",
+          type: (r["Type"] || "OWNER").toUpperCase(),
+          name: r["Name"]?.toString() || "",
+          mobile: r["Mobile"]?.toString() || "", // Allow empty
+          email: r["Email"]?.toString() || "", // Allow empty
+          unitsUsed: Number(r["Units Used"]) || 0,
+          pendingAmount: Number(r["Pending Amount"]) || 0,
         }));
 
         const res = await fetch(
@@ -196,14 +197,28 @@ const Members = () => {
         );
 
         const result = await res.json();
-        setMembers(prev => [...result.result.successful, ...prev]);
 
-        toast.success(
-          `Imported: ${result.result.successful.length} success, ${result.result.failed.length} failed`
-        );
+        if (result.result.successful.length > 0) {
+          setMembers(prev => [...result.result.successful, ...prev]);
+        }
+
+        // Show detailed success/error message
+        const successCount = result.result.successful.length;
+        const failCount = result.result.failed.length;
+
+        if (successCount > 0 && failCount === 0) {
+          toast.success(`Successfully imported ${successCount} members`);
+        } else if (successCount > 0 && failCount > 0) {
+          toast.warning(`Imported ${successCount} members, ${failCount} failed`);
+          // Log failed entries for debugging
+          console.warn("Failed imports:", result.result.failed);
+        } else {
+          toast.error("No members were imported. Please check your file.");
+        }
+
         setShowBulkImport(false);
-      } catch {
-        toast.error("Bulk import failed");
+      } catch (err) {
+        toast.error("Bulk import failed: " + err.message);
       } finally {
         setIsBulkLoading(false);
       }
@@ -213,40 +228,162 @@ const Members = () => {
   };
 
   /* ================= BULK IMPORT MODAL ================= */
-  const BulkImportModal = () => (
-    <div className="modal-overlay" onClick={() => !isBulkLoading && setShowBulkImport(false)}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3 className="modal-title">Bulk Import Members</h3>
-          {!isBulkLoading && (
-            <button className="close-btn" onClick={() => setShowBulkImport(false)}>×</button>
-          )}
-        </div>
-        <div className="modal-body">
-          <p>Upload an Excel file with the following columns:</p>
-          <ul>
-            <li>Flat Number (required)</li>
-            <li>Name (required)</li>
-            <li>Type (OWNER/RENT)</li>
-            <li>Mobile</li>
-            <li>Email</li>
-            <li>Units Used</li>
-            <li>Pending Amount</li>
-          </ul>
+  const BulkImportModal = () => {
+    const [importFile, setImportFile] = useState(null);
 
-          <div className="file-upload-area">
-            <input
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={(e) => handleBulkImport(e.target.files[0])}
-              disabled={isBulkLoading}
-            />
-            {isBulkLoading && <p>Importing...</p>}
+    const downloadTemplate = () => {
+      // Create sample data for template
+      const templateData = [
+        {
+          "Flat Number": "A-101",
+          "Name": "John Doe",
+          "Type": "OWNER",
+          "Mobile": "9876543210",
+          "Email": "john@example.com",
+          "Units Used": "150",
+          "Pending Amount": "2500"
+        },
+        {
+          "Flat Number": "A-102",
+          "Name": "Jane Smith",
+          "Type": "RENT",
+          "Mobile": "", // Empty mobile example
+          "Email": "", // Empty email example
+          "Units Used": "200",
+          "Pending Amount": "0"
+        }
+      ];
+
+      const ws = XLSX.utils.json_to_sheet(templateData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Members Template");
+
+      // Auto-size columns
+      const wscols = [
+        { wch: 12 }, // Flat Number
+        { wch: 20 }, // Name
+        { wch: 10 }, // Type
+        { wch: 15 }, // Mobile
+        { wch: 25 }, // Email
+        { wch: 12 }, // Units Used
+        { wch: 15 }, // Pending Amount
+      ];
+      ws["!cols"] = wscols;
+
+      XLSX.writeFile(wb, "members_template.xlsx");
+    };
+
+    const handleFileUpload = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        setImportFile(file);
+        handleBulkImport(file);
+      }
+    };
+
+    return (
+      <div className="modal-overlay" onClick={() => !isBulkLoading && setShowBulkImport(false)}>
+        <div className="modal-content bulk-upload-modal" onClick={e => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3 className="modal-title">Bulk Import Members</h3>
+            {!isBulkLoading && (
+              <button className="close-btn" onClick={() => setShowBulkImport(false)}>×</button>
+            )}
+          </div>
+
+          <div className="modal-body">
+            <div className="bulk-upload-guide">
+              <div className="template-download-section">
+                <h4><FaFileExcel /> Download Template</h4>
+                <p>Download our Excel template to ensure proper formatting:</p>
+                <button
+                  className="download-template-btn"
+                  onClick={downloadTemplate}
+                  disabled={isBulkLoading}
+                >
+                  <FaFileExcel /> Download Template File
+                </button>
+              </div>
+
+              <div className="format-requirements">
+                <h4><FaFileExcel /> File Requirements</h4>
+                <div className="requirements-grid">
+                  <div className="requirement-item required">
+                    <span className="req-label">Flat Number</span>
+                    <span className="req-status">Required</span>
+                  </div>
+                  <div className="requirement-item required">
+                    <span className="req-label">Name</span>
+                    <span className="req-status">Required</span>
+                  </div>
+                  <div className="requirement-item optional">
+                    <span className="req-label">Type</span>
+                    <span className="req-status">Optional (Default: OWNER)</span>
+                  </div>
+                  <div className="requirement-item optional">
+                    <span className="req-label">Mobile</span>
+                    <span className="req-status">Optional (10 digits)</span>
+                  </div>
+                  <div className="requirement-item optional">
+                    <span className="req-label">Email</span>
+                    <span className="req-status">Optional</span>
+                  </div>
+                  <div className="requirement-item optional">
+                    <span className="req-label">Units Used</span>
+                    <span className="req-status">Optional (Default: 0)</span>
+                  </div>
+                  <div className="requirement-item optional">
+                    <span className="req-label">Pending Amount</span>
+                    <span className="req-status">Optional (Default: 0)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="notes-section">
+                <h4><FaFileExcel /> Important Notes:</h4>
+                <ul>
+                  <li>Columns must be in the exact order as shown in the template</li>
+                  <li>Mobile numbers must be 10 digits if provided</li>
+                  <li>Email addresses must be valid if provided</li>
+                  <li>Flat numbers must be unique (no duplicates)</li>
+                  <li>Type must be either "OWNER" or "RENT"</li>
+                  <li>Mobile and Email can be left empty</li>
+                </ul>
+              </div>
+
+              <div className="file-upload-area">
+                <h4><FaFileExcel /> Upload Your File</h4>
+                <div className="upload-zone">
+                  <input
+                    type="file"
+                    id="bulk-upload-file"
+                    accept=".xlsx,.xls,.csv"
+                    onChange={handleFileUpload}
+                    disabled={isBulkLoading}
+                  />
+                  <label htmlFor="bulk-upload-file" className="upload-label">
+                    <FaFileExcel className="upload-icon" />
+                    <span className="upload-text">
+                      {importFile ? importFile.name : "Choose Excel File"}
+                    </span>
+                    <span className="upload-hint">Click to browse or drag & drop</span>
+                  </label>
+                  {isBulkLoading && (
+                    <div className="upload-progress">
+                      <div className="progress-bar">
+                        <div className="progress-fill"></div>
+                      </div>
+                      <p>Importing members... Please wait</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   /* ================= MEMBER DETAILS MODAL ================= */
   const MemberModal = ({ member }) => {
@@ -436,13 +573,13 @@ const Members = () => {
             </div>
 
             <div className="action-buttons-group">
-              {/* <button
+              <button
                 className="bulk-import-btn"
                 onClick={() => setShowBulkImport(true)}
                 disabled={isBulkLoading}
               >
                 <FaFileExcel /> Bulk Import
-              </button> */}
+              </button>
               <button
                 className="add-btn"
                 onClick={() => setShowForm(!showForm)}
