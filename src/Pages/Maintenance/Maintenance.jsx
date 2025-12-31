@@ -29,7 +29,8 @@ import {
     FaSpinner,
     FaFileExcel,
     FaEdit,
-    FaHistory
+    FaHistory,
+    FaInfoCircle
 } from "react-icons/fa";
 import Navbar from "../../Components/Sidebar/Navbar";
 import "./Maintenance.scss";
@@ -505,12 +506,19 @@ const Maintenance = () => {
             ]);
 
             const waterData = waterRes.ok ? await waterRes.json() : { unitRate: 0 };
-            const maintenanceData = maintenanceRes.ok ? await maintenanceRes.json() : { ownerRate: 0, rentRate: 0 };
+            const maintenanceData = maintenanceRes.ok ? await maintenanceRes.json() : {
+                ownerRate: 0,
+                rentRate: 0,
+                shopRate: 0,   // ADD THIS
+                closeRate: 0   // ADD THIS
+            };
 
             setRates({
                 waterRate: waterData.unitRate || 0,
                 ownerRate: maintenanceData.ownerRate || 0,
                 rentRate: maintenanceData.rentRate || 0,
+                shopRate: maintenanceData.shopRate || 0,   // ADD THIS
+                closeRate: maintenanceData.closeRate || 0  // ADD THIS
             });
         } catch {
             toast.error("Failed to fetch rates");
@@ -541,7 +549,7 @@ const Maintenance = () => {
         memberId: Yup.string().required("Please select a flat"),
         newReadingUnits: Yup.number()
             .required("New reading is required")
-            .min(0, "Must be positive")
+            .min(0, "Cannot be negative")
             .typeError("Must be a number"),
         fineAmount: Yup.number().min(0, "Cannot be negative").optional(),
         collectionAmount: Yup.number()
@@ -623,22 +631,35 @@ const Maintenance = () => {
         data: m
     }));
 
-    /* ================= CALCULATIONS ================= */
     const calculateTotals = (values, member) => {
         if (!member) return null;
 
         const previousUnit = member.unitsUsed || 0;
-        const totalUnits = values.newReadingUnits && values.newReadingUnits >= previousUnit
-            ? values.newReadingUnits - previousUnit
-            : 0;
+
+        // ALLOW 0 OR ANY NUMBER - DON'T RESTRICT
+        let totalUnits = 0;
+        if (values.newReadingUnits !== undefined && values.newReadingUnits !== null) {
+            totalUnits = Math.max(0, values.newReadingUnits - previousUnit);
+        }
 
         const waterAmount = totalUnits * rates.waterRate;
-        const fixedMaintenance = member.type === "OWNER" ? rates.ownerRate : rates.rentRate;
-        const previousPending = member.pendingAmount || 0;
 
+        // Get fixed maintenance rate based on type
+        let fixedMaintenance = 0;
+        if (member.type === "OWNER") {
+            fixedMaintenance = rates.ownerRate || 0;
+        } else if (member.type === "RENT") {
+            fixedMaintenance = rates.rentRate || 0;
+        } else if (member.type === "SHOP") {
+            fixedMaintenance = rates.shopRate || 0;
+        } else if (member.type === "CLOSE") {
+            fixedMaintenance = rates.closeRate || 0;
+        }
+
+        const previousPending = member.pendingAmount || 0;
         const totalMaintenance = waterAmount + fixedMaintenance + previousPending + Number(values.fineAmount || 0);
         const collectionAmt = Number(values.collectionAmount) || 0;
-        const pendingAmount = totalMaintenance - collectionAmt > 0 ? totalMaintenance - collectionAmt : 0;
+        const pendingAmount = Math.max(0, totalMaintenance - collectionAmt);
 
         return {
             previousUnit,
@@ -654,196 +675,196 @@ const Maintenance = () => {
     };
 
     /* ================= UPDATE MODAL COMPONENT ================= */
-const UpdateModal = ({ maintenance }) => {
-    const [formValues, setFormValues] = useState({
-        newReadingUnits: maintenance.newReadingUnits,
-        remainingAmount: maintenance.pendingAmount.toString(), // Start with current pending
-        additionalCollection: 0,
-    });
-
-    const calculateUpdateTotals = () => {
-        const previousUnit = maintenance.previousUnitUsed;
-        const totalUnits = formValues.newReadingUnits >= previousUnit 
-            ? formValues.newReadingUnits - previousUnit 
-            : 0;
-        
-        const waterAmount = totalUnits * maintenance.waterUnitRate;
-        const totalMaintenance = waterAmount + 
-            maintenance.fixedMaintenanceAmount + 
-            maintenance.previousPendingAmount + 
-            maintenance.fineAmount;
-        
-        // Calculate collection amount
-        let collectionAmount = maintenance.collectionAmount;
-        
-        if (formValues.remainingAmount !== "" && formValues.remainingAmount !== undefined) {
-            // If user enters remaining amount (what's left to pay)
-            const remaining = Number(formValues.remainingAmount) || 0;
-            collectionAmount = totalMaintenance - remaining;
-        } else if (formValues.additionalCollection > 0) {
-            // If user enters additional collection
-            collectionAmount = maintenance.collectionAmount + Number(formValues.additionalCollection);
-        }
-        
-        const pendingAmount = totalMaintenance - collectionAmount;
-        
-        return {
-            totalUnits,
-            waterAmount,
-            totalMaintenance,
-            collectionAmount,
-            pendingAmount: pendingAmount > 0 ? pendingAmount : 0,
-            remainingAmount: formValues.remainingAmount
-        };
-    };
-
-    const totals = calculateUpdateTotals();
-
-    const handleUpdate = () => {
-        // Make sure we're sending the correct values
-        const updateData = {
-            newReadingUnits: formValues.newReadingUnits,
-            collectionAmount: totals.collectionAmount, // Use calculated collection amount
-            updateReason: updateReason || "Manual update",
-            updatedBy: "admin"
-        };
-
-        console.log("📤 Sending update data:", updateData);
-        console.log("📊 Before update:", {
-            currentCollection: maintenance.collectionAmount,
-            currentPending: maintenance.pendingAmount,
-            newCollection: totals.collectionAmount,
-            newPending: totals.pendingAmount
+    const UpdateModal = ({ maintenance }) => {
+        const [formValues, setFormValues] = useState({
+            newReadingUnits: maintenance.newReadingUnits,
+            remainingAmount: maintenance.pendingAmount.toString(), // Start with current pending
+            additionalCollection: 0,
         });
 
-        handleUpdateMaintenance(updateData);
-    };
+        const calculateUpdateTotals = () => {
+            const previousUnit = maintenance.previousUnitUsed;
+            const totalUnits = formValues.newReadingUnits >= previousUnit
+                ? formValues.newReadingUnits - previousUnit
+                : 0;
 
-    return (
-        <div className="modal-overlay update-overlay" onClick={() => setShowUpdateModal(false)}>
-            <div className="modal-content update-modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h3 className="modal-title">
-                        <FaEdit /> Update Maintenance - {maintenance.maintenanceNo}
-                    </h3>
-                    <button className="close-btn" onClick={() => setShowUpdateModal(false)}>×</button>
-                </div>
+            const waterAmount = totalUnits * maintenance.waterUnitRate;
+            const totalMaintenance = waterAmount +
+                maintenance.fixedMaintenanceAmount +
+                maintenance.previousPendingAmount +
+                maintenance.fineAmount;
 
-                <div className="modal-body">
-                    <div className="update-info">
-                        <div className="info-row">
-                            <div className="info-item">
-                                <span className="info-label">Flat No:</span>
-                                <span className="info-value">{maintenance.flatNo}</span>
-                            </div>
-                            <div className="info-item">
-                                <span className="info-label">Member:</span>
-                                <span className="info-value">{maintenance.memberName}</span>
-                            </div>
-                            <div className="info-item">
-                                <span className="info-label">Month/Year:</span>
-                                <span className="info-value">{maintenance.maintenanceMonth}/{maintenance.maintenanceYear}</span>
-                            </div>
-                        </div>
-                        
-                        {/* CURRENT STATUS */}
-                        <div className="current-status">
-                            <h4>Current Status</h4>
-                            <div className="status-grid">
-                                <div className="status-item">
-                                    <span className="status-label">Total Due:</span>
-                                    <span className="status-value">₹{maintenance.totalMaintenanceAmount}</span>
-                                </div>
-                                <div className="status-item">
-                                    <span className="status-label">Collected:</span>
-                                    <span className="status-value success">₹{maintenance.collectionAmount}</span>
-                                </div>
-                                <div className="status-item">
-                                    <span className="status-label">Remaining:</span>
-                                    <span className="status-value pending">₹{maintenance.pendingAmount}</span>
-                                </div>
-                            </div>
-                        </div>
+            // Calculate collection amount
+            let collectionAmount = maintenance.collectionAmount;
+
+            if (formValues.remainingAmount !== "" && formValues.remainingAmount !== undefined) {
+                // If user enters remaining amount (what's left to pay)
+                const remaining = Number(formValues.remainingAmount) || 0;
+                collectionAmount = totalMaintenance - remaining;
+            } else if (formValues.additionalCollection > 0) {
+                // If user enters additional collection
+                collectionAmount = maintenance.collectionAmount + Number(formValues.additionalCollection);
+            }
+
+            const pendingAmount = totalMaintenance - collectionAmount;
+
+            return {
+                totalUnits,
+                waterAmount,
+                totalMaintenance,
+                collectionAmount,
+                pendingAmount: pendingAmount > 0 ? pendingAmount : 0,
+                remainingAmount: formValues.remainingAmount
+            };
+        };
+
+        const totals = calculateUpdateTotals();
+
+        const handleUpdate = () => {
+            // Make sure we're sending the correct values
+            const updateData = {
+                newReadingUnits: formValues.newReadingUnits,
+                collectionAmount: totals.collectionAmount, // Use calculated collection amount
+                updateReason: updateReason || "Manual update",
+                updatedBy: "admin"
+            };
+
+            console.log("📤 Sending update data:", updateData);
+            console.log("📊 Before update:", {
+                currentCollection: maintenance.collectionAmount,
+                currentPending: maintenance.pendingAmount,
+                newCollection: totals.collectionAmount,
+                newPending: totals.pendingAmount
+            });
+
+            handleUpdateMaintenance(updateData);
+        };
+
+        return (
+            <div className="modal-overlay update-overlay" onClick={() => setShowUpdateModal(false)}>
+                <div className="modal-content update-modal" onClick={e => e.stopPropagation()}>
+                    <div className="modal-header">
+                        <h3 className="modal-title">
+                            <FaEdit /> Update Maintenance - {maintenance.maintenanceNo}
+                        </h3>
+                        <button className="close-btn" onClick={() => setShowUpdateModal(false)}>×</button>
                     </div>
 
-                    <div className="update-form">
-                        <div className="form-group">
-                            <label htmlFor="newReadingUnits">
-                                <FaTachometerAlt /> New Reading Units *
-                            </label>
-                            <input
-                                type="number"
-                                id="newReadingUnits"
-                                value={formValues.newReadingUnits}
-                                onChange={(e) => setFormValues({
-                                    ...formValues,
-                                    newReadingUnits: e.target.value
-                                })}
-                                min={maintenance.previousUnitUsed}
-                                placeholder={`Enter new reading (min: ${maintenance.previousUnitUsed})`}
-                            />
-                            <div className="form-note">
-                                Previous Reading: {maintenance.previousUnitUsed}
-                            </div>
-                        </div>
-
-                        {/* COLLECTION UPDATE OPTIONS */}
-                        <div className="collection-options">
-                            <h4>Update Collection</h4>
-                            
-                            <div className="form-group">
-                                <label htmlFor="remainingAmount">
-                                    <FaRupeeSign />Remaining Amount
-                                </label>
-                                <input
-                                    type="number"
-                                    id="remainingAmount"
-                                    value={formValues.remainingAmount}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        setFormValues({
-                                            ...formValues,
-                                            remainingAmount: value,
-                                            additionalCollection: 0 // Reset additional
-                                        });
-                                    }}
-                                    readOnly
-                                    min="0"
-                                    max={maintenance.totalMaintenanceAmount}
-                                    placeholder={`What will remain unpaid? (Current: ₹${maintenance.pendingAmount})`}
-                                />
-                                <div className="form-note">
-                                    <strong>Example:</strong> Enter 0 for full payment, or enter 200 if ₹200 will remain unpaid
+                    <div className="modal-body">
+                        <div className="update-info">
+                            <div className="info-row">
+                                <div className="info-item">
+                                    <span className="info-label">Flat No:</span>
+                                    <span className="info-value">{maintenance.flatNo}</span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Member:</span>
+                                    <span className="info-value">{maintenance.memberName}</span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Month/Year:</span>
+                                    <span className="info-value">{maintenance.maintenanceMonth}/{maintenance.maintenanceYear}</span>
                                 </div>
                             </div>
 
-                            <div className="form-group">
-                                <label htmlFor="additionalCollection">
-                                    <FaRupeeSign /> Or Add Payment *
-                                </label>
-                                <input
-                                    type="number"
-                                    id="additionalCollection"
-                                    value={formValues.additionalCollection}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        setFormValues({
-                                            ...formValues,
-                                            additionalCollection: value,
-                                            remainingAmount: "" // Reset remaining
-                                        });
-                                    }}
-                                    min="0"
-                                    max={maintenance.pendingAmount}
-                                    placeholder={`Add payment to current (max: ₹${maintenance.pendingAmount})`}
-                                />
-                                <div className="form-note">
-                                    <strong>Example:</strong> Enter 300 to add ₹300 to current collection of ₹{maintenance.collectionAmount}
+                            {/* CURRENT STATUS */}
+                            <div className="current-status">
+                                <h4>Current Status</h4>
+                                <div className="status-grid">
+                                    <div className="status-item">
+                                        <span className="status-label">Total Due:</span>
+                                        <span className="status-value">₹{maintenance.totalMaintenanceAmount}</span>
+                                    </div>
+                                    <div className="status-item">
+                                        <span className="status-label">Collected:</span>
+                                        <span className="status-value success">₹{maintenance.collectionAmount}</span>
+                                    </div>
+                                    <div className="status-item">
+                                        <span className="status-label">Remaining:</span>
+                                        <span className="status-value pending">₹{maintenance.pendingAmount}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* <div className="form-group">
+                        <div className="update-form">
+                            <div className="form-group">
+                                <label htmlFor="newReadingUnits">
+                                    <FaTachometerAlt /> New Reading Units *
+                                </label>
+                                <input
+                                    type="number"
+                                    id="newReadingUnits"
+                                    value={formValues.newReadingUnits}
+                                    onChange={(e) => setFormValues({
+                                        ...formValues,
+                                        newReadingUnits: e.target.value
+                                    })}
+                                    min={maintenance.previousUnitUsed}
+                                    placeholder={`Enter new reading (min: ${maintenance.previousUnitUsed})`}
+                                />
+                                <div className="form-note">
+                                    Previous Reading: {maintenance.previousUnitUsed}
+                                </div>
+                            </div>
+
+                            {/* COLLECTION UPDATE OPTIONS */}
+                            <div className="collection-options">
+                                <h4>Update Collection</h4>
+
+                                <div className="form-group">
+                                    <label htmlFor="remainingAmount">
+                                        <FaRupeeSign />Remaining Amount
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="remainingAmount"
+                                        value={formValues.remainingAmount}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setFormValues({
+                                                ...formValues,
+                                                remainingAmount: value,
+                                                additionalCollection: 0 // Reset additional
+                                            });
+                                        }}
+                                        readOnly
+                                        min="0"
+                                        max={maintenance.totalMaintenanceAmount}
+                                        placeholder={`What will remain unpaid? (Current: ₹${maintenance.pendingAmount})`}
+                                    />
+                                    <div className="form-note">
+                                        <strong>Example:</strong> Enter 0 for full payment, or enter 200 if ₹200 will remain unpaid
+                                    </div>
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="additionalCollection">
+                                        <FaRupeeSign /> Or Add Payment *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="additionalCollection"
+                                        value={formValues.additionalCollection}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setFormValues({
+                                                ...formValues,
+                                                additionalCollection: value,
+                                                remainingAmount: "" // Reset remaining
+                                            });
+                                        }}
+                                        min="0"
+                                        max={maintenance.pendingAmount}
+                                        placeholder={`Add payment to current (max: ₹${maintenance.pendingAmount})`}
+                                    />
+                                    <div className="form-note">
+                                        <strong>Example:</strong> Enter 300 to add ₹300 to current collection of ₹{maintenance.collectionAmount}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* <div className="form-group">
                             <label htmlFor="updateReason">
                                 <FaHistory /> Update Reason (Optional)
                             </label>
@@ -856,75 +877,75 @@ const UpdateModal = ({ maintenance }) => {
                             />
                         </div> */}
 
-                        {/* Update Preview */}
-                        <div className="update-preview">
-                            <h4>Update Preview</h4>
-                            <div className="preview-grid">
-                                <div className="preview-item">
-                                    <span className="preview-label">Water Amount:</span>
-                                    <span className="preview-value">₹{totals.waterAmount.toFixed(2)}</span>
-                                </div>
-                                <div className="preview-item">
-                                    <span className="preview-label">Total Due:</span>
-                                    <span className="preview-value">₹{totals.totalMaintenance.toFixed(2)}</span>
-                                </div>
-                                <div className="preview-item">
-                                    <span className="preview-label">Total Collected:</span>
-                                    <span className="preview-value success">₹{totals.collectionAmount.toFixed(2)}</span>
-                                    <div className="change-indicator">
-                                        {totals.collectionAmount !== maintenance.collectionAmount && (
-                                            <span className="change-arrow">
-                                                (₹{maintenance.collectionAmount} → ₹{totals.collectionAmount.toFixed(2)})
-                                            </span>
-                                        )}
+                            {/* Update Preview */}
+                            <div className="update-preview">
+                                <h4>Update Preview</h4>
+                                <div className="preview-grid">
+                                    <div className="preview-item">
+                                        <span className="preview-label">Water Amount:</span>
+                                        <span className="preview-value">₹{totals.waterAmount.toFixed(2)}</span>
                                     </div>
-                                </div>
-                                <div className="preview-item">
-                                    <span className="preview-label">New Remaining:</span>
-                                    <span className="preview-value pending">₹{totals.pendingAmount.toFixed(2)}</span>
-                                    <div className="change-indicator">
-                                        {totals.pendingAmount !== maintenance.pendingAmount && (
-                                            <span className="change-arrow">
-                                                (₹{maintenance.pendingAmount} → ₹{totals.pendingAmount.toFixed(2)})
-                                            </span>
-                                        )}
+                                    <div className="preview-item">
+                                        <span className="preview-label">Total Due:</span>
+                                        <span className="preview-value">₹{totals.totalMaintenance.toFixed(2)}</span>
+                                    </div>
+                                    <div className="preview-item">
+                                        <span className="preview-label">Total Collected:</span>
+                                        <span className="preview-value success">₹{totals.collectionAmount.toFixed(2)}</span>
+                                        <div className="change-indicator">
+                                            {totals.collectionAmount !== maintenance.collectionAmount && (
+                                                <span className="change-arrow">
+                                                    (₹{maintenance.collectionAmount} → ₹{totals.collectionAmount.toFixed(2)})
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="preview-item">
+                                        <span className="preview-label">New Remaining:</span>
+                                        <span className="preview-value pending">₹{totals.pendingAmount.toFixed(2)}</span>
+                                        <div className="change-indicator">
+                                            {totals.pendingAmount !== maintenance.pendingAmount && (
+                                                <span className="change-arrow">
+                                                    (₹{maintenance.pendingAmount} → ₹{totals.pendingAmount.toFixed(2)})
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="modal-footer">
-                    <button
-                        className="cancel-btn"
-                        onClick={() => setShowUpdateModal(false)}
-                        disabled={isUpdating}
-                    >
-                        <FaTimes /> Cancel
-                    </button>
-                    <button
-                        className="update-btn"
-                        onClick={handleUpdate}
-                        disabled={isUpdating || 
-                            (!formValues.remainingAmount && !formValues.additionalCollection && formValues.newReadingUnits === maintenance.newReadingUnits)
-                        }
-                    >
-                        {isUpdating ? (
-                            <>
-                                <FaSpinner className="spinner" /> Updating...
-                            </>
-                        ) : (
-                            <>
-                                <FaCheckCircle /> Update Maintenance
-                            </>
-                        )}
-                    </button>
+                    <div className="modal-footer">
+                        <button
+                            className="cancel-btn"
+                            onClick={() => setShowUpdateModal(false)}
+                            disabled={isUpdating}
+                        >
+                            <FaTimes /> Cancel
+                        </button>
+                        <button
+                            className="update-btn"
+                            onClick={handleUpdate}
+                            disabled={isUpdating ||
+                                (!formValues.remainingAmount && !formValues.additionalCollection && formValues.newReadingUnits === maintenance.newReadingUnits)
+                            }
+                        >
+                            {isUpdating ? (
+                                <>
+                                    <FaSpinner className="spinner" /> Updating...
+                                </>
+                            ) : (
+                                <>
+                                    <FaCheckCircle /> Update Maintenance
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    );
-};
+        );
+    };
 
     /* ================= ENHANCED RECORD DETAILS MODAL ================= */
     const RecordModal = ({ record }) => {
@@ -1518,6 +1539,8 @@ const UpdateModal = ({ maintenance }) => {
                                     <option value="">All Types</option>
                                     <option value="OWNER">Owner</option>
                                     <option value="RENT">Rent</option>
+                                    <option value="SHOP">Shop</option>
+                                    <option value="CLOSE">Close</option>
                                 </select>
                             </div>
 
@@ -1544,19 +1567,33 @@ const UpdateModal = ({ maintenance }) => {
                                 const errors = {};
                                 const member = selectedMember?.data;
 
-                                if (member && values.newReadingUnits) {
-                                    const previousUnit = member.unitsUsed || 0;
-                                    if (values.newReadingUnits < previousUnit) {
-                                        errors.newReadingUnits = `New reading (${values.newReadingUnits}) cannot be less than previous reading (${previousUnit})`;
+                                // REMOVE THE ENTIRE NEW READING VALIDATION BLOCK!
+                                // Just keep basic validation
+                                if (member && values.newReadingUnits !== undefined) {
+                                    // Only check for negative numbers
+                                    if (values.newReadingUnits < 0) {
+                                        errors.newReadingUnits = "New reading cannot be negative";
                                     }
                                 }
 
-                                // Calculate total maintenance for validation
-                                if (member && values.newReadingUnits && values.collectionAmount !== undefined) {
+                                // Calculate total maintenance for collection validation
+                                if (member && values.newReadingUnits !== undefined && values.collectionAmount !== undefined) {
                                     const previousUnit = member.unitsUsed || 0;
-                                    const totalUnits = values.newReadingUnits >= previousUnit ? values.newReadingUnits - previousUnit : 0;
+                                    const totalUnits = Math.max(0, values.newReadingUnits - previousUnit);
+
+                                    // Get correct fixed rate based on member type
+                                    let fixedMaintenance = 0;
+                                    if (member.type === "OWNER") {
+                                        fixedMaintenance = rates.ownerRate || 0;
+                                    } else if (member.type === "RENT") {
+                                        fixedMaintenance = rates.rentRate || 0;
+                                    } else if (member.type === "SHOP") {
+                                        fixedMaintenance = rates.shopRate || 0;
+                                    } else if (member.type === "CLOSE") {
+                                        fixedMaintenance = rates.closeRate || 0;
+                                    }
+
                                     const waterAmount = totalUnits * rates.waterRate;
-                                    const fixedMaintenance = member.type === "OWNER" ? rates.ownerRate : rates.rentRate;
                                     const previousPending = member.pendingAmount || 0;
                                     const totalMaintenance = waterAmount + fixedMaintenance + previousPending + Number(values.fineAmount || 0);
 
@@ -1639,6 +1676,7 @@ const UpdateModal = ({ maintenance }) => {
                                         </div>
 
                                         {/* FLAT SELECTION */}
+                                        {/* FLAT SELECTION */}
                                         <div className="form-row">
                                             <div className="form-field">
                                                 <label htmlFor="memberId">
@@ -1650,6 +1688,15 @@ const UpdateModal = ({ maintenance }) => {
                                                     onChange={(option) => {
                                                         setFieldValue("memberId", option?.value || "");
                                                         setSelectedMember(option);
+
+                                                        // AUTO-SET NEW READING TO PREVIOUS READING IMMEDIATELY
+                                                        if (option?.data) {
+                                                            const previousUnit = option.data.unitsUsed || 0;
+                                                            setFieldValue("newReadingUnits", previousUnit);
+
+                                                            // Also auto-set collection amount to 0 for convenience
+                                                            setFieldValue("collectionAmount", 0);
+                                                        }
                                                     }}
                                                     onBlur={() => setFieldTouched("memberId", true)}
                                                     placeholder="Search for flat number..."
@@ -1658,6 +1705,13 @@ const UpdateModal = ({ maintenance }) => {
                                                     classNamePrefix="react-select"
                                                 />
                                                 <ErrorMessage name="memberId" component="div" className="error" />
+                                                {/* Add note about auto-fill */}
+                                                {selectedMember?.data && (
+                                                    <div className="form-note">
+                                                        <FaInfoCircle style={{ marginRight: '5px' }} />
+                                                        New reading auto-filled to previous value ({selectedMember.data.unitsUsed || 0})
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 
@@ -1711,20 +1765,38 @@ const UpdateModal = ({ maintenance }) => {
                                                     <div className="form-field">
                                                         <label htmlFor="newReadingUnits">
                                                             <FaTachometerAlt /> New Reading Units *
+                                                            {member && (member.type === "SHOP" || member.type === "CLOSE") && (
+                                                                <span className="note-small"> (Previous reading shown by default)</span>
+                                                            )}
                                                         </label>
                                                         <Field
                                                             type="number"
                                                             name="newReadingUnits"
                                                             id="newReadingUnits"
-                                                            placeholder={`Enter new reading (min: ${totals.previousUnit})`}
-                                                            min={totals.previousUnit}
+                                                            placeholder={`Enter new reading (Previous: ${totals?.previousUnit || 0})`}
+                                                            min="0"
                                                         />
+                                                        {/* ADD THIS - SET DEFAULT VALUE WHEN MEMBER IS SELECTED */}
+                                                        {member && values.newReadingUnits === "" && (
+                                                            <button
+                                                                type="button"
+                                                                className="set-default-btn"
+                                                                onClick={() => setFieldValue("newReadingUnits", totals?.previousUnit || 0)}
+                                                            >
+                                                                Set to previous reading ({totals?.previousUnit || 0})
+                                                            </button>
+                                                        )}
+                                                        <div className="form-note">
+                                                            Previous reading: {totals?.previousUnit || 0}
+                                                            {totals?.previousUnit === 0 && " - You can enter 0 or any number"}
+                                                            {totals?.previousUnit > 0 && " - You can enter any number (0, same, or higher)"}
+                                                        </div>
                                                         <ErrorMessage name="newReadingUnits" component="div" className="error" />
                                                     </div>
                                                 </div>
 
-                                                {/* CALCULATION PREVIEW */}
-                                                {values.newReadingUnits && (
+                                                {/* CALCULATION PREVIEW - SHOW EVEN WHEN VALUE IS 0 */}
+                                                {values.newReadingUnits !== "" && values.newReadingUnits !== undefined && (
                                                     <div className="calculation-card">
                                                         <h4>
                                                             <FaWater /> Water Usage Calculation
@@ -1783,7 +1855,7 @@ const UpdateModal = ({ maintenance }) => {
                                                 </div>
 
                                                 {/* ENHANCED SUMMARY CARD */}
-                                                {(values.newReadingUnits || values.fineAmount) && (
+                                                {(values.newReadingUnits !== undefined || values.fineAmount) && (
                                                     <div className="enhanced-summary-card">
                                                         <h4>
                                                             <FaChartBar /> Maintenance Breakdown
@@ -1862,7 +1934,7 @@ const UpdateModal = ({ maintenance }) => {
                                         {/* SUBMIT BUTTON */}
                                         <button
                                             type="submit"
-                                            disabled={isSubmitting || !member || !values.newReadingUnits || values.collectionAmount === undefined}
+                                            disabled={isSubmitting || !member || values.newReadingUnits === undefined || values.newReadingUnits === "" || values.collectionAmount === undefined}
                                             className="submit-btn"
                                         >
                                             {isSubmitting ? (

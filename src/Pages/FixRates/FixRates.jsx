@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import { 
-  FaCogs, 
-  FaWater, 
-  FaRupeeSign, 
-  FaHome, 
-  FaBuilding, 
-  FaSave, 
-  FaEdit, 
-  FaTrash, 
+import {
+  FaCogs,
+  FaWater,
+  FaRupeeSign,
+  FaHome,
+  FaBuilding,
+  FaSave,
+  FaEdit,
+  FaTrash,
   FaInfoCircle,
   FaCheckCircle,
   FaHistory,
-  FaExclamationTriangle 
+  FaExclamationTriangle,
+    FaShoppingBag,  // For Shop icon
+  FaTimesCircle
 } from "react-icons/fa";
 import Navbar from "../../Components/Sidebar/Navbar";
 import "react-toastify/dist/ReactToastify.css";
@@ -26,6 +28,9 @@ const FixRates = () => {
   const [ownerRate, setOwnerRate] = useState("");
   const [rentRate, setRentRate] = useState("");
   const [unitRate, setUnitRate] = useState("");
+
+  const [shopRate, setShopRate] = useState("");
+  const [closeRate, setCloseRate] = useState("");
 
   /* ================= FETCH RATES ================= */
   const fetchRates = async () => {
@@ -46,6 +51,8 @@ const FixRates = () => {
       if (maintenanceData) {
         setOwnerRate(maintenanceData.ownerRate || "");
         setRentRate(maintenanceData.rentRate || "");
+        setShopRate(maintenanceData.shopRate || "");  // ADD THIS
+        setCloseRate(maintenanceData.closeRate || "");  // ADD THIS
       }
       if (waterData) {
         setUnitRate(waterData.unitRate || "");
@@ -63,8 +70,9 @@ const FixRates = () => {
 
   /* ================= MAINTENANCE RATE FUNCTIONS ================= */
   const handleMaintenanceSubmit = async () => {
-    if (!ownerRate || !rentRate) {
-      toast.error("Please fill in all fields");
+    // Validate all fields are filled
+    if (!ownerRate || !rentRate || !shopRate || !closeRate) {
+      toast.error("Please fill in all maintenance rate fields");
       return;
     }
 
@@ -78,9 +86,11 @@ const FixRates = () => {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          ownerRate: parseFloat(ownerRate), 
-          rentRate: parseFloat(rentRate) 
+        body: JSON.stringify({
+          ownerRate: parseFloat(ownerRate),
+          rentRate: parseFloat(rentRate),
+          shopRate: parseFloat(shopRate),  // ADD THIS
+          closeRate: parseFloat(closeRate)  // ADD THIS
         }),
       });
 
@@ -179,7 +189,7 @@ const FixRates = () => {
     <Navbar>
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="fixrates-container">
-        
+
         {/* PAGE HEADER */}
         <div className="fixrates-header">
           <h1>
@@ -252,20 +262,69 @@ const FixRates = () => {
                   </div>
                 )}
               </div>
+
+              <div className="input-group">
+                <label>
+                  <FaBuilding /> Shop Rate <span className="required">*</span>
+                </label>
+                <div className="input-wrapper">
+                  <FaRupeeSign className="input-icon" />
+                  <input
+                    type="number"
+                    placeholder="Enter rate for shops"
+                    value={shopRate}
+                    onChange={e => setShopRate(e.target.value)}
+                    min="0"
+                    step="0.01"
+                  />
+                  <span className="input-suffix">₹/month</span>
+                </div>
+                {maintenance?.shopRate && (
+                  <div className="current-value">
+                    <FaHistory /> Current: ₹{maintenance.shopRate}
+                  </div>
+                )}
+              </div>
+
+              {/* Close Rate Input */}
+              <div className="input-group">
+                <label>
+                  <FaBuilding /> Close Rate <span className="required">*</span>
+                </label>
+                <div className="input-wrapper">
+                  <FaRupeeSign className="input-icon" />
+                  <input
+                    type="number"
+                    placeholder="Enter rate for closed members"
+                    value={closeRate}
+                    onChange={e => setCloseRate(e.target.value)}
+                    min="0"
+                    step="0.01"
+                  />
+                  <span className="input-suffix">₹/month</span>
+                </div>
+                {maintenance?.closeRate && (
+                  <div className="current-value">
+                    <FaHistory /> Current: ₹{maintenance.closeRate}
+                  </div>
+                )}
+              </div>
+
+
             </div>
 
             {/* Action Buttons */}
             <div className="card-actions">
-              <button 
+              <button
                 onClick={handleMaintenanceSubmit}
                 className={maintenance ? "update-btn" : "save-btn"}
                 disabled={!ownerRate || !rentRate}
               >
                 {maintenance ? <><FaEdit /> Update</> : <><FaSave /> Add Rate</>}
               </button>
-              
+
               {maintenance && (
-                <button 
+                <button
                   onClick={handleDeleteMaintenance}
                   className="delete-btn"
                 >
@@ -274,6 +333,7 @@ const FixRates = () => {
               )}
             </div>
 
+            {/* Current Rates Display */}
             {/* Current Rates Display */}
             {maintenance && (
               <div className="current-rates">
@@ -289,6 +349,15 @@ const FixRates = () => {
                     <span className="rate-label">Rent Rate:</span>
                     <span className="rate-value">{maintenance.rentRate}</span>
                   </div>
+                  {/* Add Shop and Close rate display */}
+                  <div className="rate-item">
+                    <span className="rate-label">Shop Rate:</span>
+                    <span className="rate-value">{maintenance.shopRate}</span>
+                  </div>
+                  <div className="rate-item">
+                    <span className="rate-label">Close Rate:</span>
+                    <span className="rate-value">{maintenance.closeRate}</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -296,8 +365,8 @@ const FixRates = () => {
             {/* Info Section */}
             <div className="card-info">
               <p>
-                <FaInfoCircle /> 
-                Maintenance rates are applied monthly to all members based on their type (Owner/Rent).
+                <FaInfoCircle />
+                Maintenance rates are applied monthly to all members based on their type (Owner/Rent/Shop/Close).
               </p>
             </div>
           </div>
@@ -343,16 +412,16 @@ const FixRates = () => {
 
             {/* Action Buttons */}
             <div className="card-actions">
-              <button 
+              <button
                 onClick={handleWaterSubmit}
                 className={water ? "update-btn" : "save-btn"}
                 disabled={!unitRate}
               >
                 {water ? <><FaEdit /> Update</> : <><FaSave /> Add Rate</>}
               </button>
-              
+
               {water && (
-                <button 
+                <button
                   onClick={handleDeleteWater}
                   className="delete-btn"
                 >
@@ -379,7 +448,7 @@ const FixRates = () => {
             {/* Info Section */}
             <div className="card-info">
               <p>
-                <FaInfoCircle /> 
+                <FaInfoCircle />
                 Water rates are calculated based on units consumed by each member.
               </p>
             </div>

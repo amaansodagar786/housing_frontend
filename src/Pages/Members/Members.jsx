@@ -435,6 +435,8 @@ const Members = () => {
                     >
                       <option value="OWNER">OWNER</option>
                       <option value="RENT">RENT</option>
+                      <option value="SHOP">SHOP</option>
+                      <option value="CLOSE">CLOSE</option>
                     </select>
                   ) : (
                     member.type
@@ -573,13 +575,13 @@ const Members = () => {
             </div>
 
             <div className="action-buttons-group">
-              {/* <button
+              <button
                 className="bulk-import-btn"
                 onClick={() => setShowBulkImport(true)}
                 disabled={isBulkLoading}
               >
                 <FaFileExcel /> Bulk Import
-              </button> */}
+              </button>
               <button
                 className="add-btn"
                 onClick={() => setShowForm(!showForm)}
@@ -621,6 +623,8 @@ const Members = () => {
                       <Field as="select" name="type" id="type" className="select-field">
                         <option value="OWNER">OWNER</option>
                         <option value="RENT">RENT</option>
+                        <option value="SHOP">SHOP</option>
+                        <option value="CLOSE">CLOSE</option>
                       </Field>
                       <ErrorMessage name="type" component="div" className="error" />
                     </div>
