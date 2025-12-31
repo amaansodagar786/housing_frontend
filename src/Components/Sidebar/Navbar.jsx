@@ -68,10 +68,10 @@ const Navbar = ({
   };
 
   const menuData = [
-    // { icon: <MdOutlineDashboard />, title: "Dashboard", path: "/" }, 
+    { icon: <MdOutlineDashboard />, title: "Dashboard", path: "/" },  
       { icon: <FiDollarSign />, title: "Maintenance", path: "/maintenance" },
     { icon: <TbUsers />, title: "Members", path: "/members" },
-        // { icon: <FiTrendingUp />, title: "Expense", path: "/expense" }, 
+        { icon: <FiTrendingUp />, title: "Expense", path: "/expense" },  
 
     { icon: <BsCurrencyRupee />, title: "Fixed Rates", path: "/fixrates" },
     // { icon: <FiSettings />, title: "Settings", path: "/settings" }, 
