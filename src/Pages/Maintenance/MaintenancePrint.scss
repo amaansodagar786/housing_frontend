@@ -24,7 +24,7 @@
   .maintenance-header {
     display: flex;
     flex-direction: column;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     border-bottom: 3px solid #1a5276;
     padding-bottom: 15px;
     position: relative;
@@ -82,7 +82,7 @@
     display: flex;
     justify-content: space-between;
     gap: 30px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     page-break-inside: avoid;
 
     .member-info,
@@ -123,7 +123,7 @@
 
   /* Water Usage Table */
   .water-usage-section {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     page-break-inside: avoid;
 
     h3 {
@@ -166,7 +166,7 @@
 
   /* Breakdown Section */
   .breakdown-section {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     page-break-inside: avoid;
 
     h3 {
@@ -206,7 +206,7 @@
 
   /* Payment Summary */
   .payment-summary-section {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     page-break-inside: avoid;
 
     h3 {
@@ -287,11 +287,11 @@
 
   /* Terms Section */
   .terms-section {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     page-break-inside: avoid;
 
     h3 {
-      margin: 0 0 10px 0;
+      margin: 0 0 7px 0;
       font-size: 14px;
       color: #1a5276;
       border-bottom: 2px solid #1a5276;
@@ -313,8 +313,8 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    margin-top: 5px;
-    padding-top: 15px;
+    margin-top: 3px;
+    padding-top: 10px;
     border-top: 1px solid #ddd;
     page-break-inside: avoid;
 
