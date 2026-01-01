@@ -44,7 +44,7 @@ const Login = () => {
           autoClose: 2000,
         });
 
-        setTimeout(() => navigate("/members"), 2000);
+        setTimeout(() => navigate("/"), 2000);
       } catch (error) {
         const data = error.response?.data;
 

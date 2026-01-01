@@ -32,10 +32,10 @@ const Home = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [yearFilter, setYearFilter] = useState(new Date().getFullYear());
+  const [yearFilter, setYearFilter] = useState("ALL");
   const [monthFilter, setMonthFilter] = useState("ALL");
   const [availableYears, setAvailableYears] = useState([]);
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,6 +52,7 @@ const Home = () => {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/dashboard/years`);
       const data = await response.json();
       if (data.success) {
+        // The backend should now return an array starting with "ALL"
         setAvailableYears(data.data);
       }
     } catch (error) {
@@ -63,10 +64,10 @@ const Home = () => {
     try {
       setLoading(true);
       const url = `${import.meta.env.VITE_API_URL}/dashboard/data?year=${yearFilter}${monthFilter !== "ALL" ? `&month=${monthFilter}` : ''}`;
-      
+
       const response = await fetch(url);
       const data = await response.json();
-      
+
       if (data.success) {
         setDashboardData(data.data);
       } else {
@@ -144,7 +145,7 @@ const Home = () => {
 
   // Handle card clicks for navigation
   const handleCardClick = (cardType) => {
-    switch(cardType) {
+    switch (cardType) {
       case 'maintenance':
         navigate('/maintenance');
         break;
@@ -171,29 +172,30 @@ const Home = () => {
             <FiBarChart2 /> Financial Dashboard
           </h1>
           <p>High-level financial insights for Society Management</p>
-          
+
           <div className="home-filters-panel">
             <div className="home-filter-group">
               <label>
                 <FiFilter /> Year
               </label>
-              <select 
-                value={yearFilter} 
-                onChange={(e) => setYearFilter(parseInt(e.target.value))}
+              <select
+                value={yearFilter}
+                onChange={(e) => setYearFilter(e.target.value)}
                 className="home-filter-select"
               >
+                <option value="ALL">All Years</option> {/* Add this first */}
                 {availableYears.map(year => (
                   <option key={year} value={year}>{year}</option>
                 ))}
               </select>
             </div>
-            
+
             <div className="home-filter-group">
               <label>
                 <FiCalendar /> Month
               </label>
-              <select 
-                value={monthFilter} 
+              <select
+                value={monthFilter}
                 onChange={(e) => setMonthFilter(e.target.value)}
                 className="home-filter-select"
               >
@@ -204,10 +206,10 @@ const Home = () => {
                 ))}
               </select>
             </div>
-            
+
             <div className="home-filter-info">
               Showing data for: <strong>
-                {yearFilter} 
+                {yearFilter === "ALL" ? "All Years" : yearFilter}
                 {monthFilter !== "ALL" ? ` - ${months.find(m => m.value === monthFilter)?.label}` : ' (All Months)'}
               </strong>
             </div>
@@ -217,7 +219,7 @@ const Home = () => {
         {/* Summary Cards - 4 Cards */}
         <div className="home-metrics-grid">
           {/* Card 1: Total Maintenance Collected */}
-          <div 
+          <div
             className="home-metric-card home-maintenance-metric home-clickable-card"
             onClick={() => handleCardClick('maintenance')}
           >
@@ -233,7 +235,7 @@ const Home = () => {
           </div>
 
           {/* Card 2: Total Expenses */}
-          <div 
+          <div
             className="home-metric-card home-expenses-metric home-clickable-card"
             onClick={() => handleCardClick('expenses')}
           >
@@ -248,7 +250,7 @@ const Home = () => {
           </div>
 
           {/* Card 3: Pending Maintenance Collection */}
-          <div 
+          <div
             className="home-metric-card home-pending-maintenance-metric home-clickable-card"
             onClick={() => handleCardClick('pending-maintenance')}
           >
@@ -263,7 +265,7 @@ const Home = () => {
           </div>
 
           {/* Card 4: Pending Expense Bills */}
-          <div 
+          <div
             className="home-metric-card home-pending-expenses-metric home-clickable-card"
             onClick={() => handleCardClick('pending-expenses')}
           >
@@ -298,11 +300,11 @@ const Home = () => {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={charts.monthlyMaintenance}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis 
-                  dataKey="monthName" 
+                <XAxis
+                  dataKey="monthName"
                   tick={{ fontSize: 12 }}
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fontSize: 12 }}
                   tickFormatter={(value) => {
                     if (value >= 100000) return `₹${(value / 100000).toFixed(0)}L`;
@@ -310,23 +312,23 @@ const Home = () => {
                     return `₹${value}`;
                   }}
                 />
-                <Tooltip 
+                <Tooltip
                   formatter={(value, name) => {
                     const formattedValue = new Intl.NumberFormat('en-IN').format(value);
                     return [`₹${formattedValue}`, name];
                   }}
                 />
                 <Legend />
-                <Bar 
-                  dataKey="totalMaintenance" 
-                  name="Maintenance" 
-                  fill="#8884d8" 
+                <Bar
+                  dataKey="totalMaintenance"
+                  name="Maintenance"
+                  fill="#8884d8"
                   radius={[4, 4, 0, 0]}
                 />
-                <Bar 
-                  dataKey="totalWater" 
-                  name="Water" 
-                  fill="#82ca9d" 
+                <Bar
+                  dataKey="totalWater"
+                  name="Water"
+                  fill="#82ca9d"
                   radius={[4, 4, 0, 0]}
                 />
               </BarChart>
@@ -347,11 +349,11 @@ const Home = () => {
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={charts.monthlyExpenses}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis 
-                  dataKey="monthName" 
+                <XAxis
+                  dataKey="monthName"
                   tick={{ fontSize: 12 }}
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fontSize: 12 }}
                   tickFormatter={(value) => {
                     if (value >= 100000) return `₹${(value / 100000).toFixed(0)}L`;
@@ -359,15 +361,15 @@ const Home = () => {
                     return `₹${value}`;
                   }}
                 />
-                <Tooltip 
+                <Tooltip
                   formatter={(value) => [`₹${new Intl.NumberFormat('en-IN').format(value)}`, "Expenses"]}
                 />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="totalExpenses" 
+                <Line
+                  type="monotone"
+                  dataKey="totalExpenses"
                   name="Expenses"
-                  stroke="#ff6b6b" 
+                  stroke="#ff6b6b"
                   strokeWidth={3}
                   dot={{ r: 4 }}
                   activeDot={{ r: 6 }}
@@ -394,11 +396,11 @@ const Home = () => {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={charts.yearlyComparison}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis 
-                  dataKey="year" 
+                <XAxis
+                  dataKey="year"
                   tick={{ fontSize: 12 }}
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fontSize: 12 }}
                   tickFormatter={(value) => {
                     if (value >= 100000) return `₹${(value / 100000).toFixed(0)}L`;
@@ -406,23 +408,23 @@ const Home = () => {
                     return `₹${value}`;
                   }}
                 />
-                <Tooltip 
+                <Tooltip
                   formatter={(value, name) => {
                     const formattedValue = new Intl.NumberFormat('en-IN').format(value);
                     return [`₹${formattedValue}`, name];
                   }}
                 />
                 <Legend />
-                <Bar 
-                  dataKey="totalMaintenance" 
-                  name="Maintenance" 
-                  fill="#4ecdc4" 
+                <Bar
+                  dataKey="totalMaintenance"
+                  name="Maintenance"
+                  fill="#4ecdc4"
                   radius={[4, 4, 0, 0]}
                 />
-                <Bar 
-                  dataKey="totalExpenses" 
-                  name="Expenses" 
-                  fill="#ff6b6b" 
+                <Bar
+                  dataKey="totalExpenses"
+                  name="Expenses"
+                  fill="#ff6b6b"
                   radius={[4, 4, 0, 0]}
                 />
               </BarChart>
@@ -459,7 +461,7 @@ const Home = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip 
+                <Tooltip
                   formatter={(value) => [`₹${new Intl.NumberFormat('en-IN').format(value)}`, "Amount"]}
                 />
                 <Legend />
