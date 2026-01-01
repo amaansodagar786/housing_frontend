@@ -342,7 +342,7 @@
       td {
         padding: 16px 20px;
         font-size: 15px;
-        color: #333;
+        color: #000;
 
         .flat-cell {
           display: flex;
@@ -391,7 +391,7 @@
 
         .name-cell {
           font-weight: 600;
-          color: #2c3e50;
+          color: #000 !important;
         }
 
         .units-cell,

@@ -2,23 +2,13 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Home from "../Pages/Home/Home";
-import Customer from "../Pages/Customer/Customer";
-import Vendor from "../Pages/Vendor/Vendor";
-import Items from "../Pages/Items/Items";
-import PurchaseOrder from "../Pages/PurchaseOrder/PurchaseOrder";
-import GRN from "../Pages/GRN/GRN";
-import Bom from "../Pages/Bom/Bom";
-import Sales from "../Pages/Sales/Sales";
-import Inventory from "../Pages/Inventory/Inventory";
 
-import Register from "../Pages/Authentication/Register/Register";
+
+// import Register from "../Pages/Authentication/Register/Register"; 
 import Login from "../Pages/Authentication/Login/Login";
 import ProtectedRoute from "../Components/Protected/ProtectedRoute";
 
-import ProductDisposal from "../Pages/Defective/ProductDisposal";
-import AdminUsers from "../Pages/Authentication/Admin/AdminUsers";
-import DiscountProduct from "../Pages/DiscountProduct/DiscountProduct";
-import Report from "../Pages/Reports/Report";
+
 import Members from "../Pages/Members/Members";
 
 import Footer from "../Components/Footer/Footer";
@@ -38,7 +28,7 @@ const Router = () => {
       <div style={{ flex: 1 }}>
         <Routes>
           {/* PUBLIC ROUTES */}
-          <Route path="/register" element={<Register />} />
+          {/* <Route path="/register" element={<Register />} />  */}
           <Route path="/login" element={<Login />} />
           <Route
             path="/members"
@@ -87,7 +77,7 @@ const Router = () => {
             }
           />
 
-          <Route
+          {/* <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
@@ -202,7 +192,7 @@ const Router = () => {
                 <Report />
               </ProtectedRoute>
             }
-          />
+          /> */}
         </Routes>
       </div>
 

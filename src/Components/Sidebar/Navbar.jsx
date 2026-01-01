@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
 
-// Icons
+// Icons - keep your existing imports
 import { BiLogOut, BiLogIn } from "react-icons/bi";
 import { TbUsers, TbReportAnalytics } from "react-icons/tb";
 import { LuFile } from "react-icons/lu";
@@ -36,6 +36,12 @@ const Navbar = ({
     if (onToggleCollapse) onToggleCollapse(state);
   };
 
+  // AUTO-COLLAPSE on route change
+  useEffect(() => {
+    // Collapse sidebar when route changes
+    handleToggle(true);
+  }, [location.pathname]); // This runs whenever the pathname changes
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
@@ -69,13 +75,24 @@ const Navbar = ({
 
   const menuData = [
     { icon: <MdOutlineDashboard />, title: "Dashboard", path: "/" },  
-      { icon: <FiDollarSign />, title: "Maintenance", path: "/maintenance" },
+    { icon: <FiDollarSign />, title: "Maintenance", path: "/maintenance" },
     { icon: <TbUsers />, title: "Members", path: "/members" },
-        { icon: <FiTrendingUp />, title: "Expense", path: "/expense" },  
-
+    { icon: <FiTrendingUp />, title: "Expense", path: "/expense" },  
     { icon: <BsCurrencyRupee />, title: "Fixed Rates", path: "/fixrates" },
     // { icon: <FiSettings />, title: "Settings", path: "/settings" }, 
   ];
+
+  // Handle menu item click
+  const handleMenuItemClick = (path, e) => {
+    // Collapse sidebar first
+    handleToggle(true);
+    
+    // Then navigate if onNavigation prop exists
+    if (onNavigation) {
+      e.preventDefault();
+      onNavigation(path);
+    }
+  };
 
   return (
     <>
@@ -106,12 +123,7 @@ const Navbar = ({
               <NavLink
                 to={path}
                 className={({ isActive }) => (isActive ? "active" : "")}
-                onClick={(e) => {
-                  if (onNavigation) {
-                    e.preventDefault();
-                    onNavigation(path);
-                  }
-                }}
+                onClick={(e) => handleMenuItemClick(path, e)}
               >
                 <span className="menu-icon">{icon}</span>
                 <span className="menu-title">{title}</span>

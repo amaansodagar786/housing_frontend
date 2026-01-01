@@ -740,10 +740,11 @@ const Members = () => {
                 <thead>
                   <tr>
                     <th>Flat Number</th>
-                    <th>Type</th>
+
                     <th>Name</th>
                     <th>Units Used</th>
                     <th>Pending Amount</th>
+                    <th>Type</th>
                     {/* <th>Actions</th>  */}
                   </tr>
                 </thead>
@@ -760,24 +761,19 @@ const Members = () => {
                           {member.flatNumber}
                         </div>
                       </td>
+
+                      <td className="name-cell" style={{ color: "black" }}>
+                        {member.name}
+                      </td>
+
+                      <td className="units-cell">{member.unitsUsed || 0}</td>
+                      <td className="amount-cell">₹{member.pendingAmount || 0}</td>
                       <td>
                         <span className={`type-badge ${member.type.toLowerCase()}`}>
                           {member.type}
                         </span>
                       </td>
-                      <td className="name-cell">{member.name}</td>
-                      <td className="units-cell">{member.unitsUsed || 0}</td>
-                      <td className="amount-cell">₹{member.pendingAmount || 0}</td>
-                      {/* Remove this entire td element: */}
-                      {/* <td className="actions-cell">
-        <button
-          className="view-btn"
-          onClick={() => setSelectedMember(member)}
-          title="View Details"
-        >
-          View
-        </button>
-      </td> */}
+
                     </tr>
                   ))}
                 </tbody>

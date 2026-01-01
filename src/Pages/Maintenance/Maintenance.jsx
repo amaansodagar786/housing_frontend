@@ -63,6 +63,7 @@ const Maintenance = () => {
     const [filterMonth, setFilterMonth] = useState(String(currentDate.getMonth() + 1));
     const [filterYear, setFilterYear] = useState(String(currentDate.getFullYear()));
     const [filterType, setFilterType] = useState("");
+    const [filterStatus, setFilterStatus] = useState("");
 
     /* ================= DELETE MAINTENANCE FUNCTION ================= */
     const [isDeleting, setIsDeleting] = useState(false);
@@ -1374,7 +1375,6 @@ const Maintenance = () => {
         );
     };
 
-    /* ================= FILTER FUNCTIONS ================= */
     const getFilteredRecords = () => {
         let filtered = maintenanceRecords.filter(record =>
             record.flatNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1396,6 +1396,18 @@ const Maintenance = () => {
 
         if (filterType) {
             filtered = filtered.filter(record => record.memberType === filterType);
+        }
+
+        // NEW: Filter by payment status
+        if (filterStatus) {
+            filtered = filtered.filter(record => {
+                if (filterStatus === "paid") {
+                    return record.pendingAmount === 0;
+                } else if (filterStatus === "pending") {
+                    return record.pendingAmount > 0;
+                }
+                return true;
+            });
         }
 
         return filtered;
@@ -1429,6 +1441,7 @@ const Maintenance = () => {
         setFilterMonth("");
         setFilterYear("");
         setFilterType("");
+        setFilterStatus("");
     };
 
     /* ================= MONTHS AND YEARS FOR SELECT ================= */
@@ -1541,6 +1554,21 @@ const Maintenance = () => {
                                     <option value="RENT">Rent</option>
                                     <option value="SHOP">Shop</option>
                                     <option value="CLOSE">Close</option>
+                                </select>
+                            </div>
+
+
+                            <div className="filter-group">
+                                <label>
+                                    <FaMoneyBillWave /> Payment Status
+                                </label>
+                                <select
+                                    value={filterStatus}
+                                    onChange={(e) => setFilterStatus(e.target.value)}
+                                >
+                                    <option value="">All Status</option>
+                                    <option value="paid">Paid (₹0 Pending)</option>
+                                    <option value="pending">Pending</option>
                                 </select>
                             </div>
 
@@ -1962,8 +1990,10 @@ const Maintenance = () => {
                             {filterMonth && ` • Month: ${new Date(0, filterMonth - 1).toLocaleString('default', { month: 'long' })}`}
                             {filterYear && ` • Year: ${filterYear}`}
                             {filterType && ` • Type: ${filterType}`}
+                            {/* NEW: Show payment status filter */}
+                            {filterStatus && ` • Status: ${filterStatus === "paid" ? "Paid" : "Pending"}`}
                         </h3>
-                        {(filterMonth || filterYear || filterType || searchTerm) && (
+                        {(filterMonth || filterYear || filterType || filterStatus || searchTerm) && (
                             <span className="filter-info">
                                 Filters applied •
                                 <button className="clear-filters-btn" onClick={clearFilters}>
