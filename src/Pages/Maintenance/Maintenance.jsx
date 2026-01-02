@@ -2025,16 +2025,15 @@ const Maintenance = () => {
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Maintenance No</th>
-                                        <th>Month/Year</th>
                                         <th>Flat No</th>
                                         <th>Member</th>
+                                        <th>Pending</th>
+                                        <th>Total Amount</th>
+                                        <th>Maintenance No</th>
+                                        <th>Month/Year</th>
                                         <th>Date</th>
                                         <th>Type</th>
-                                        <th>Total Amount</th>
                                         <th>Collected</th>
-                                        <th>Pending</th>
-                                        {/* <th>Actions</th>  */}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -2044,6 +2043,10 @@ const Maintenance = () => {
                                             className={`clickable-row ${selectedRecord?.maintenanceId === record.maintenanceId ? 'selected' : ''}`}
                                             onClick={() => setSelectedRecord(record)}
                                         >
+                                            <td className="flat-cell">{record.flatNo}</td>
+                                            <td className="name-cell">{record.memberName}</td>
+                                            <td className="amount-cell pending">₹{record.pendingAmount}</td>
+                                            <td className="amount-cell total">₹{record.totalMaintenanceAmount}</td>
                                             <td>
                                                 <div className="maintenance-no">
                                                     <FaCog className="icon" />
@@ -2055,8 +2058,6 @@ const Maintenance = () => {
                                                     {record.maintenanceMonth}/{record.maintenanceYear}
                                                 </div>
                                             </td>
-                                            <td className="flat-cell">{record.flatNo}</td>
-                                            <td className="name-cell">{record.memberName}</td>
                                             <td className="date-cell">
                                                 {new Date(record.collectionDate).toLocaleDateString()}
                                             </td>
@@ -2065,33 +2066,7 @@ const Maintenance = () => {
                                                     {record.memberType}
                                                 </span>
                                             </td>
-                                            <td className="amount-cell total">₹{record.totalMaintenanceAmount}</td>
                                             <td className="amount-cell success">₹{record.collectionAmount}</td>
-                                            <td className="amount-cell pending">₹{record.pendingAmount}</td>
-                                            {/* <td className="actions-cell">
-                                                <div className="table-actions">
-                                                    <button
-                                                        className="action-btn view-btn"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setSelectedRecord(record);
-                                                        }}
-                                                        title="View Details"
-                                                    >
-                                                        <FaEye />
-                                                    </button>
-                                                    <button
-                                                        className="action-btn update-btn"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            openUpdateModal(record);
-                                                        }}
-                                                        title="Update"
-                                                    >
-                                                        <FaEdit />
-                                                    </button>
-                                                </div>
-                                            </td> */}
                                         </tr>
                                     ))}
                                 </tbody>

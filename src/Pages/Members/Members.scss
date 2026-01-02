@@ -22,6 +22,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    display: none;
   }
 
   .header-controls {
@@ -301,6 +302,72 @@
     width: 100%;
     border-collapse: collapse;
     min-width: 800px;
+
+    @media (max-width: 768px) {
+      min-width: 500px;
+      /* Reduced from 800px */
+
+      thead th {
+        padding: 12px 10px;
+        /* Reduced padding */
+        font-size: 12px;
+        /* Slightly smaller font */
+        min-width: 80px;
+        /* Set minimum width */
+        max-width: 120px;
+        /* Set maximum width */
+        font-size:  12px !important;
+      }
+
+      tbody td {
+        padding: 10px 8px;
+        /* Reduced padding */
+        font-size: 13px;
+        /* Slightly smaller font */
+        min-width: 80px;
+        /* Set minimum width */
+        max-width: 120px;
+        /* Set maximum width */
+        // white-space: nowrap; 
+        /* Prevent wrapping */
+        overflow: hidden;
+        // text-overflow: ellipsis; 
+      }
+
+      /* Make specific columns even smaller if needed */
+      .units-cell,
+      .amount-cell {
+        min-width: 70px !important;
+        max-width: 100px !important;
+      }
+
+      .type-badge {
+        padding: 3px 8px !important;
+        /* Reduced padding */
+        font-size: 11px !important;
+        /* Smaller font */
+        max-width: 80px !important;
+        /* Smaller max width */
+        min-width: 60px !important;
+        /* Set minimum width */
+      }
+
+      .flat-cell {
+        min-width: 100px;
+        /* Adjust flat number width */
+        font-size: 13px;
+
+        .flat-icon {
+          font-size: 12px;
+        }
+      }
+
+      .name-cell {
+        min-width: 120px;
+        /* Adjust name width */
+        max-width: 150px;
+      }
+    }
 
     thead {
       background: linear-gradient(135deg, #f5f6fa, #eef1f9);

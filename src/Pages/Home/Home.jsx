@@ -249,6 +249,17 @@ const Home = () => {
             </div>
           </div>
 
+          <div className="home-metric-card home-balance-metric">
+            <FiTrendingUp className="home-metric-icon" />
+            <div>
+              <h3>Current Balance</h3>
+              <p>{formatCurrency(summary.currentBalance)}</p>
+              <small>
+                All-time balance
+              </small>
+            </div>
+          </div>
+
           {/* Card 3: Pending Maintenance Collection */}
           <div
             className="home-metric-card home-pending-maintenance-metric home-clickable-card"

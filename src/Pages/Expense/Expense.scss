@@ -436,6 +436,64 @@
     border-collapse: collapse;
     min-width: 1000px;
 
+
+    @media (max-width: 768px) {
+      min-width: 480px;
+
+      thead th {
+        padding: 10px 8px;
+        font-size: 11px;
+        min-width: 70px;
+        max-width: 100px;
+      }
+
+      tbody td {
+        padding: 8px 6px;
+        font-size: 12px;
+        min-width: 70px;
+        max-width: 100px;
+        word-wrap: break-word;
+        /* ✅ Allow wrapping */
+        overflow-wrap: break-word;
+        /* ✅ Allow wrapping */
+        font-size: 12px !important;
+        white-space: wrap;
+
+      }
+
+      .units-cell,
+      .amount-cell {
+        min-width: 60px !important;
+        max-width: 80px !important;
+      }
+
+      .type-badge {
+        padding: 3px 6px;
+        font-size: 10px;
+      }
+
+      .flat-cell {
+        min-width: 90px;
+        font-size: 12px;
+        word-wrap: break-word;
+        /* ✅ Allow wrapping */
+
+        .flat-icon {
+          font-size: 10px;
+        }
+      }
+
+      .name-cell {
+        min-width: 100px;
+        max-width: 130px;
+        font-size: 12px;
+        word-wrap: break-word !important;
+        /* ✅ Allow wrapping */
+        overflow-wrap: break-word !important;
+        /* ✅ Allow wrapping */
+      }
+    }
+
     thead {
       background: linear-gradient(135deg, #e3f2fd, #bbdefb);
 

@@ -1371,12 +1371,11 @@ const Expense = () => {
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Expense No</th>
-                                        <th>Date Range</th>
                                         <th>Category</th>
-                                        {/* <th>Description</th>  */}
                                         <th>Vendor</th>
                                         <th>Amount</th>
+                                        <th>Expense No</th>
+                                        <th>Date Range</th>
                                         <th>Status</th>
                                         <th>Document</th>
                                     </tr>
@@ -1389,15 +1388,6 @@ const Expense = () => {
                                             onClick={() => setSelectedExpense(expense)}
                                         >
                                             <td>
-                                                <div className="expense-no">
-                                                    <FaFileInvoice className="icon" />
-                                                    {expense.expenseNo}
-                                                </div>
-                                            </td>
-                                            <td className="date-cell">
-                                                {new Date(expense.dateFrom).toLocaleDateString()} - {new Date(expense.dateTo).toLocaleDateString()}
-                                            </td>
-                                            <td>
                                                 {expense.category === "OTHER"
                                                     ? expense.customCategory || "Other"
                                                     : categoryOptions.find(c => c.value === expense.category)?.label || expense.category
@@ -1406,6 +1396,16 @@ const Expense = () => {
                                             {/* <td className="description-cell">{expense.description}</td> */}
                                             <td className="vendor-cell">{expense.vendorName}</td>
                                             <td className="amount-cell">₹{expense.amount}</td>
+                                            <td>
+                                                <div className="expense-no">
+                                                    <FaFileInvoice className="icon" />
+                                                    {expense.expenseNo}
+                                                </div>
+                                            </td>
+                                            <td className="date-cell">
+                                                {new Date(expense.dateFrom).toLocaleDateString()} - {new Date(expense.dateTo).toLocaleDateString()}
+                                            </td>
+
                                             <td>
                                                 <span className={`status-badge ${expense.paymentStatus.toLowerCase()}`}>
                                                     {expense.paymentStatus}

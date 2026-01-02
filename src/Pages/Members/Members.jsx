@@ -742,8 +742,9 @@ const Members = () => {
                     <th>Flat Number</th>
 
                     <th>Name</th>
-                    <th>Units Used</th>
+
                     <th>Pending Amount</th>
+                    <th>Units Used</th>
                     <th>Type</th>
                     {/* <th>Actions</th>  */}
                   </tr>
@@ -765,9 +766,9 @@ const Members = () => {
                       <td className="name-cell" style={{ color: "black" }}>
                         {member.name}
                       </td>
-
-                      <td className="units-cell">{member.unitsUsed || 0}</td>
                       <td className="amount-cell">₹{member.pendingAmount || 0}</td>
+                      <td className="units-cell">{member.unitsUsed || 0}</td>
+
                       <td>
                         <span className={`type-badge ${member.type.toLowerCase()}`}>
                           {member.type}
